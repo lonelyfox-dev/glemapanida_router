@@ -9,6 +9,7 @@
 - Ветки фичей: feature_{short_feachure_name}[_author]
 
 ### Структура репозитория:
+Одна фича = одна ветка (Trunk-Based Development)
 
 ### Структура коммита:
 - Название: [module] feature / {short_feature_description} \
