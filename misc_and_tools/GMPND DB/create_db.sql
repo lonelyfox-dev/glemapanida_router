@@ -11,9 +11,9 @@ set client_encoding TO 'UTF8';
 CREATE SCHEMA router
     CREATE TABLE City (
         id SERIAL PRIMARY KEY,
-        name TEXT NOT NULL,
-        code TEXT NOT NULL,
-        code_yandex TEXT NOT NULL,
+        name VARCHAR(25) NOT NULL,
+        code VARCHAR(5) NOT NULL,
+        code_yandex VARCHAR(10) NOT NULL,
         latitude NUMERIC(10, 7) NOT NULL,
         longitude NUMERIC(10, 7) NOT NULL
     );
