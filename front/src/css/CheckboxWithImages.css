@@ -1,0 +1,23 @@
+.transports-check-boxes {
+    display: flex;
+    align-items: center;
+  }
+  
+  .transports-check-boxes input[type="checkbox"] {
+    display: none;
+  }
+  
+  .transports-check-boxes input[type="checkbox"] + label {
+    margin-right: 10px;
+    position: relative;
+    cursor: pointer;
+  }
+  
+  .transports-check-boxes input[type="checkbox"] + label img {
+    opacity: 0.2;
+    transition: opacity 0.3s;
+  }
+  
+  .transports-check-boxes input[type="checkbox"]:checked + label img {
+    opacity: 1;
+  }

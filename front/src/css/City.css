@@ -1,0 +1,9 @@
+.city{
+    
+    background: #333;
+    padding: 1px;
+    margin: '0 auto';
+    
+    float:left;
+    border-radius: 10px;
+}
