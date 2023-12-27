@@ -9,10 +9,12 @@ config::params config::getParams()
 {
     return par;
 }
+//проверка присутствия ключа в файле
 bool config::checkKey(QSettings *settings, QString key) {
     if (!settings->contains(key)) { qDebug() << key << "does not exist"; return false; }
     return true;
 }
+//чтение .ini файла
 bool config::readConfig()
 {
     QString appPath = QDir::currentPath()+"/SERVER2.ini";

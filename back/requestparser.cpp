@@ -1,6 +1,6 @@
 #include "requestparser.h"
 
-
+//получение ручки из запроса
 std::string requestparser::getHandler(std::string request)
 {
     std::istringstream iss(request);
@@ -20,7 +20,7 @@ std::string requestparser::getHandler(std::string request)
     }
     return "";
 }
-
+//получение параметров запроса в виде map
 std::map<std::string, std::string> requestparser::getParams(std::string request)
 {
     std::istringstream iss(request);

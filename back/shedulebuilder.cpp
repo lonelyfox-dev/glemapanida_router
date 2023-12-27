@@ -1,5 +1,5 @@
 #include "shedulebuilder.h"
-
+ //построение расписания самолетов для двух городов
 QList<Ticket *> sheduleBuilder::generatePlaneSchedule(QString source, QString destination, int distance)
 {
     int Days = 2;
@@ -28,7 +28,7 @@ QList<Ticket *> sheduleBuilder::generatePlaneSchedule(QString source, QString de
     }
     return schedule;
 }
-
+ //построение расписания автобусов для двух городов
 QList<Ticket *> sheduleBuilder::generateBusSchedule(QString source, QString destination, int distance)
 {
     int Days = 2;
@@ -51,12 +51,13 @@ QList<Ticket *> sheduleBuilder::generateBusSchedule(QString source, QString dest
             departure.setMSecsSinceEpoch(departure.toMSecsSinceEpoch()+travelTime*1000);
             ticket->setArrivalTime(arrival);
             ticket->setDepartureTime(departure);
+            ticket->setTravelTime(travelTime);
             schedule.append(ticket);
         }
     }
     return schedule;
 }
-
+ //построение расписания поездов для двух городов
 QList<Ticket *> sheduleBuilder::generateTrainSchedule(QString source, QString destination, int distance)
 {
     int Days = 2;
@@ -79,6 +80,7 @@ QList<Ticket *> sheduleBuilder::generateTrainSchedule(QString source, QString de
             departure.setMSecsSinceEpoch(departure.toMSecsSinceEpoch()+travelTime*1000);
             ticket->setArrivalTime(arrival);
             ticket->setDepartureTime(departure);
+            ticket->setTravelTime(travelTime);
             schedule.append(ticket);
         }
     }

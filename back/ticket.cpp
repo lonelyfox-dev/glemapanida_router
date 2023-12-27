@@ -76,13 +76,14 @@ void Ticket::setTravelTime(qint64 travelTime)
 
 QJsonObject Ticket::toJson()
 {
+    QLocale russianLocale(QLocale::Russian);
     QJsonObject obj;
     obj["from"]=arrival;
     obj["to"]=departure;
-    obj["arrival"]=arrivalTime.toString();
-    obj["departure"]=departureTime.toString();
-    obj["transport"]="train";
-    obj["duration"]=travelTime/1000;
+    obj["arrival"]=russianLocale.toString(arrivalTime, "dd MMMM yyyy, dddd, hh:mm:ss");
+    obj["departure"]=russianLocale.toString(departureTime, "dd MMMM yyyy, dddd, hh:mm:ss");
+    obj["transport"]=transports[transport];
+    obj["duration"]=travelTime;
     obj["cost"]=cost;
     return obj;
 }

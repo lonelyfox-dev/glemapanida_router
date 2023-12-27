@@ -9,12 +9,16 @@
 class config
 {
 public:
+    //чтение .ini файла
     bool readConfig();
+    //обращение к объекту для вызова функций и изменения состояний
     static config &instance() {
         static config l_config;
         return l_config;
     }
+    //удаление конструктора-копирования
     config( const config& ) = delete;
+    //структура, хранящая в себе все параметры .ini файла
     struct params{
         QString ServerHost;
         int ServerPort;
@@ -30,6 +34,7 @@ public:
     params getParams();
 private:
     config();
+    //проверка присутствия ключа в файле
     static bool checkKey(QSettings *settings, QString key);
 };
 

@@ -1,5 +1,9 @@
 #include "api.h"
 
+QStringList api::availableTransports={"plane","train","bus"};
+QStringList api::routesVariants={"money","travelTime"};
+
+//ручка получения вариантов городов по промежуточному имени
 QString api::getCity(QString name, dbcontroller *dbCtrl)
 {
     if(name=="") return "[]";
@@ -23,12 +27,13 @@ QString api::getCity(QString name, dbcontroller *dbCtrl)
     QString dataToString=QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
     return dataToString;
 }
-
+//ручка получения маршрута с заданными параметрами в запросе
 QString api::getRoutes(std::map<std::string, std::string> params)
 {
     QList<QPair<QString,QString>> cityPairs;
     QStringList cities;
     QStringList transports;
+    QString route;
     for(auto it=params.begin();it!=params.end();it++)
     {
         if (it->first.find("city") != std::string::npos)
@@ -37,9 +42,13 @@ QString api::getRoutes(std::map<std::string, std::string> params)
         }
         else
         {
-            if(it->second.find("true")!=std::string::npos)
+            if(availableTransports.contains(QString::fromStdString(it->first)) && it->second.find("true")!=std::string::npos)
             {
                 transports.append(QString::fromStdString(it->first));
+            }
+            if(routesVariants.contains(QString::fromStdString(it->first)) && it->second.find("true")!=std::string::npos)
+            {
+               route=QString::fromStdString(it->first);
             }
         }
     }
@@ -53,29 +62,45 @@ QString api::getRoutes(std::map<std::string, std::string> params)
     }
     QJsonArray arr;
     QDateTime actualTime=QDateTime::currentDateTime();
-    foreach(auto item,cityPairs)
-    {
-        QJsonArray ticketArray=Topology::instance().dijkstra(item.first,item.second,transports,actualTime);
-        if(ticketArray.size()==0) return "[]";
-        actualTime=QDateTime::fromString(ticketArray[ticketArray.size()-1].toObject()["departure"].toString());
-        foreach(auto ticket,ticketArray)
+    if(route=="money")
+        foreach(auto item,cityPairs)
         {
-            arr.append(ticket);
+            QJsonArray ticketArray=Topology::instance().LowCostRoute(item.first,item.second,transports,actualTime);
+            if(ticketArray.size()==0) return "[]";
+            actualTime=QDateTime::fromString(ticketArray[ticketArray.size()-1].toObject()["departure"].toString());
+            foreach(auto ticket,ticketArray)
+            {
+                arr.append(ticket);
+            }
         }
-    }
+    if(route=="travelTime")
+        foreach(auto item,cityPairs)
+        {
+            QJsonArray ticketArray=Topology::instance().LowTravelTimeRoute(item.first,item.second,transports,actualTime);
+            if(ticketArray.size()==0) return "[]";
+            actualTime=QDateTime::fromString(ticketArray[ticketArray.size()-1].toObject()["departure"].toString());
+            foreach(auto ticket,ticketArray)
+            {
+                arr.append(ticket);
+            }
+        }
     QJsonDocument doc;
     doc.setArray(arr);
 
     QString dataToString=QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
     return dataToString;
 }
-
+//обработка пользовательского запроса
 api::Header api::requestProcessing(std::string msg, dbcontroller *dbCtrl)
 {
+    //получение ручки
     auto handler=requestparser::getHandler(msg);
+    //получение параметров запроса
     auto params=requestparser::getParams(msg);
+    //имя ручки к числу (switch/case принимает только int)
     int Handler=handlerToInt(handler);
     Header header;
+    //проверка правильности переданных параметров
     bool res=requestParamsCheck(Handler,params);
     if(!res)
     {
@@ -85,6 +110,7 @@ api::Header api::requestProcessing(std::string msg, dbcontroller *dbCtrl)
         header.status="Invalid options";
         return header;
     }
+    //обработка конкретного запроса
     switch (Handler)
     {
     case GET_CITY:
@@ -98,15 +124,6 @@ api::Header api::requestProcessing(std::string msg, dbcontroller *dbCtrl)
         return header;
     }
     case GET_TICKET:
-    {
-//        header.errorCode=200;
-//        header.response=execPython().toStdString();
-//        QByteArray byteArray = QByteArray::fromPercentEncoding(QString::fromStdString(header.response).toUtf8());
-//        header.contentLength=byteArray.size();
-//        header.status="OK";
-//        return header;
-    }
-    case GET_ROUTES:
     {
         header.errorCode=200;
         header.response=getRoutes(params).toStdString();//test().toStdString();
@@ -125,7 +142,7 @@ api::Header api::requestProcessing(std::string msg, dbcontroller *dbCtrl)
     }
     }
 }
-
+//запуск скрипта для получения списка билетов от яндекса
 QString api::execPython(QString city1,QString city2,QString date)
 {
     QProcess process;
@@ -164,10 +181,6 @@ int api::handlerToInt(std::string handler)
     {
         return GET_TICKET;
     }
-    if(handler == "getRoutes")
-    {
-        return GET_ROUTES;
-    }
     return -1;
 }
 
@@ -188,67 +201,4 @@ bool api::requestParamsCheck(int handler, std::map<std::string, std::string> par
     }
     }
     return true;
-}
-
-QJsonObject api::getLowDurationTicket(QJsonObject obj, QStringList transports)
-{
-    QJsonArray segments=obj["segments"].toArray();
-    QJsonObject minDurationItem;
-    int minDuration=1000000000;
-    foreach(auto item,segments)
-    {
-        QJsonObject value=item.toObject();
-        QString transport=value["from"].toObject()["transport_type"].toString();
-        if(value["duration"].toInt()<minDuration &&
-                transports.contains(transport))
-        {
-            minDuration=value["duration"].toInt();
-            minDurationItem=value;
-        }
-    }
-    return minDurationItem;
-}
-
-QString api::formOutputJson(QJsonObject obj)
-{
-    QString fromData=obj["from"].toObject()["title"].toString();
-    QByteArray byteArray = QByteArray::fromStdString(fromData.toStdString());
-        QString from = QString::fromUtf8(byteArray);
-    QJsonObject resObj;
-    //qDebug() << "Restored string: " << restoredString;
-    resObj["from"]=  from;//QString::fromUtf8(obj["from"].toObject()["title"].toString().toStdString().c_str());
-    resObj["to"]=obj["to"].toObject()["title"].toString();
-    resObj["arrival"]=obj["arrival"].toString();
-    resObj["departure"]=obj["departure"].toString();
-    resObj["transport"]=obj["from"].toObject()["transport_type"].toString();
-    resObj["duration"]=obj["duration"].toInt();//cost
-    QJsonDocument document(resObj);
-    QString strJson(document.toJson(QJsonDocument::Compact));
-    return strJson;
-}
-
-QString api::test()
-{
-    QMap<QString,QString> city={{"Москва","c213"},
-                                            {"Калининград","c22"},
-                                            {"Санкт-Петербург","c2"},
-                                            {"Сочи","c239"},
-                                             {"Владимир","c192"}};
-
-    QList<QPair<QString,QString>> pair={{"Москва","Санкт-Петербург"},{"Санкт-Петербург","Калининград"},
-                                       {"Калининград","Сочи"},{"Сочи","Москва"}};
-    QJsonArray arr;
-    foreach(auto item,pair)
-    {
-        auto data=execPython(city[item.first],city[item.second],"2023-12-6");
-        QJsonDocument doc = QJsonDocument::fromJson(data.toUtf8());
-        auto obj = doc.object();
-        auto value=getLowDurationTicket(obj,{"train","plane"});
-        auto js=formOutputJson(value);
-        QJsonDocument js_doc = QJsonDocument::fromJson(js.toUtf8());
-        arr.append(js_doc.object());
-    }
-    QJsonDocument jsonDocument(arr);
-    QString strJson = jsonDocument.toJson(QJsonDocument::Compact);
-    return strJson;
 }

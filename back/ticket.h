@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QRandomGenerator>
 #include <QJsonObject>
+#include <QLocale>
 
 class Ticket
 {
@@ -36,6 +37,7 @@ private:
     QDateTime arrivalTime;
     QDateTime departureTime;
     QString transport="";
+    QMap<QString,QString> transports={{"train","Поезд"},{"plane","Самолет"},{"bus","Автобус"}};
 //    QRandomGenerator generator;
 };
 

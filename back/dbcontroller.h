@@ -8,6 +8,7 @@ class dbcontroller
 {
 public:
     dbcontroller(QString HostName,qint32 port,QString dbName,QString UserName,QString Password,QString schema);
+    //получение экземпляра базы данных
     QSqlDatabase getDB();
     QString getSchema();
 private:
