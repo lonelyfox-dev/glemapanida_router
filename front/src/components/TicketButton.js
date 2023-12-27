@@ -4,13 +4,26 @@ import '../css/TicketButton.css'; // Подключаем файл стилей
 class TicketButton extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { tickets: [] }; // Используем массив для хранения билетов
+    this.state = { tickets: [],
+      keyTranslations : {
+        arrival: "Время прибытия",
+        cost: "Стоимость",
+        departure: "Время отправления",
+        duration: "Продолжительность",
+        from: "Откуда",
+        to: "Куда",
+        transport: "Транспорт"
+      } }; // Используем массив для хранения билетов
     this.cities = props.cities;
     this.transportState=props.transportState
+    this.routeState=props.routeState
+
+    
+
   }
 
   handleGetTicket = () => {
-    const { cities, transportState } = this.props; // Получаем словари из props
+    const { cities, transportState, routeState } = this.props; // Получаем словари из props
 
   // Преобразуем словарь cities в формат параметров запроса
   const cityParams = Object.keys(cities)
@@ -22,9 +35,13 @@ class TicketButton extends React.Component {
   .map(key => `${key}=${transportState[key]}`)
   .join('&');
 
-  const url = `http://localhost:8080/getTicket?${cityParams}&${transportParams}`;
+  const routeParams=Object.keys(routeState)
+  .map(key=>`${key}=${routeState[key]}`)
+  .join('&');
 
-  console.log(transportParams)
+  const url = `http://localhost:8080/getTicket?${cityParams}&${transportParams}&${routeParams}`;
+
+  console.log(url)
 
     fetch(url)
       .then(response => response.json())
@@ -48,7 +65,7 @@ class TicketButton extends React.Component {
           <div className="ticket" key={index}>
             <div className="rounded-box">
               {Object.keys(ticket).map(key => (
-                <p key={key}>{key}: {ticket[key]}</p>
+                <p key={key}>{this.state.keyTranslations[key]}: {ticket[key]}</p>
               ))}
             </div>
           </div>

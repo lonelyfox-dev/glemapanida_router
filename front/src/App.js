@@ -33,7 +33,7 @@ class App extends React.Component{
                 <AddCity onAdd={this.addCity}/>
                 <RoutesVariant
                 routeState={this.state.routeState}
-                onCheckboxChange={this.handleCheckboxChange2}
+                onCheckboxChange={this.handleCheckboxChangeRoute}
                 />
                 <TransportsCheckBoxes  
                     transportState={this.state.transportState}
@@ -45,7 +45,7 @@ class App extends React.Component{
                         <Cities cities={this.state.cities}/>    
                     </div>
                     <div style={{ position: "relative", zIndex: 2}}>
-                        <TicketButton cities={this.state.cities}  transportState={this.state.transportState}/>            
+                        <TicketButton cities={this.state.cities}  transportState={this.state.transportState} routeState={this.state.routeState}/>            
                     </div>
                 </main>
             
@@ -72,7 +72,7 @@ class App extends React.Component{
             }
         });
     }
-    handleCheckboxChange2 = (name) => {
+    handleCheckboxChangeRoute = (name) => {
         console.log(this.state.routeState)
         console.log(name)
         if (name === "money") {
